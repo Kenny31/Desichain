@@ -11,7 +11,6 @@ import android.widget.Toast;
 
 import com.example.nitin.desichain.Contents.ProductHorizontal;
 import com.example.nitin.desichain.R;
-import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
@@ -45,7 +44,7 @@ public class ProductHorizontalAdapter extends RecyclerView.Adapter<ProductHorizo
         holder.mProductCost.setText(String.valueOf(mProduct.getmProductCost()));
         holder.mProductname.setText(mProduct.getmProductName());
         holder.mProductReviewsNo.setText(mProduct.getmProductNoOfReviews());
-        Picasso.with(mContext).load("http://www.desichain.in/uploads/thumb_"+mProductHorizontalList.get(position).getmProductImageId()).into(holder.mProductImage);
+        holder.mProductImage.setImageResource(mProduct.getmProductImageId());
         holder.mAddToCartImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
