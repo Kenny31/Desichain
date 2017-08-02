@@ -12,21 +12,20 @@ import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ExpandableListView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.nitin.desichain.Adapters.BrandStudioItemsAdapter;
 import com.example.nitin.desichain.Adapters.SingleCartAdapter;
 import com.example.nitin.desichain.Contents.CategoryList;
 import com.example.nitin.desichain.Contents.ProductHorizontal;
-import com.example.nitin.desichain.Contents.*;
 import com.example.nitin.desichain.Internet.FetchingFromUrl;
-import com.example.nitin.desichain.ParsingJson.BsetSellingProduct;
+import com.example.nitin.desichain.ParsingJson.BestSellingProduct;
 import com.example.nitin.desichain.ParsingJson.ParticularPublisherDetail;
 import com.example.nitin.desichain.SubCategoryList.ShowCategoryAdapeter;
 import com.example.nitin.desichain.Utility.Utility;
@@ -37,11 +36,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-public class BrandProducts extends AppCompatActivity implements View.OnClickListener, SingleCartAdapter.ListChange {
+public class BrandProducts extends AppCompatActivity implements View.OnClickListener,SingleCartAdapter.ListChange {
 
     private static final String TAG = BrandProducts.class.getSimpleName();
     private RecyclerView mBrandRecyclerView;
-    private List<com.example.nitin.desichain.Contents.CategoryList> mList;
+    private List<ProductHorizontal> mList;
     private BrandStudioItemsAdapter mAdapter;
     private String mJsonResponse;
     DrawerLayout drawer;
@@ -161,7 +160,7 @@ public class BrandProducts extends AppCompatActivity implements View.OnClickList
 
         drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, drawer, R.string.navigation_drawer_open, R.string.navigation_drawer_close) {
+                this, drawer, R.string.navigation_drawer_open, R.string.navigation_drawer_close){
             @Override
             public void onDrawerOpened(View drawerView) {
                 super.onDrawerOpened(drawerView);
@@ -170,19 +169,38 @@ public class BrandProducts extends AppCompatActivity implements View.OnClickList
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         headerView = navigationView.inflateHeaderView(R.layout.nav_header_main);
         refferencetonavigationcategory(navigationView);
-        nestedScrollView = (NestedScrollView) navigationView.findViewById(R.id.scrollposition);
-        listView = (Helper) navigationView.findViewById(R.id.parentcategoryList);
+        nestedScrollView= (NestedScrollView) navigationView.findViewById(R.id.scrollposition);
+        listView= (Helper) navigationView.findViewById(R.id.parentcategoryList);
         initiaze();
         add();
-
+        
 
     }
 
+    public void loadProducts(String url,int sno) {
+        if (!(Utility.isNetworkAvailable(this))) {
+
+            Toast.makeText(this, "No Internet Connection", Toast.LENGTH_SHORT).show();
+        } else {
+            try {
+                JSON_RESPONSE = new FetchingFromUrl().execute(url+sno).get();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } catch (ExecutionException e) {
+                e.printStackTrace();
+            }
+
+            if (JSON_RESPONSE != null) {
+                mBrandProdList = new BestSellingProduct(JSON_RESPONSE, BrandProducts.this).parseBestSellingProduct();
+            }
+        }
+    }
+
     private void add() {
-        arrayList.add(new CategoryHolder("Book and media", 0, R.mipmap.book));
-        arrayList.add(new CategoryHolder("Pooja Item", 0, R.mipmap.pooja));
-        arrayList.add(new CategoryHolder("Home Care", 0, R.mipmap.homecare));
-        arrayList.add(new CategoryHolder("Others", 0, R.mipmap.other));
+        arrayList.add(new CategoryHolder("Book and media",0,R.mipmap.book));
+        arrayList.add(new CategoryHolder("Pooja Item",0,R.mipmap.pooja));
+        arrayList.add(new CategoryHolder("Home Care",0,R.mipmap.homecare));
+        arrayList.add(new CategoryHolder("Others",0,R.mipmap.other));
         Books.add("Bhagavad-Gita As It Is");
         Books.add("Paperback/ Hardbound");
         Books.add("Media");
@@ -201,29 +219,33 @@ public class BrandProducts extends AppCompatActivity implements View.OnClickList
         others.add("Men");
         others.add("BagsnStationery");
         others.add("MobileAccessiories");
-        hashMap.put(arrayList.get(0).getPARENTCATEGORY(), Books);
-        hashMap.put(arrayList.get(1).getPARENTCATEGORY(), Poojaitem);
-        hashMap.put(arrayList.get(2).getPARENTCATEGORY(), Homecare);
-        hashMap.put(arrayList.get(3).getPARENTCATEGORY(), others);
+        hashMap.put(arrayList.get(0).getPARENTCATEGORY(),Books);
+        hashMap.put(arrayList.get(1).getPARENTCATEGORY(),Poojaitem);
+        hashMap.put(arrayList.get(2).getPARENTCATEGORY(),Homecare);
+        hashMap.put(arrayList.get(3).getPARENTCATEGORY(),others);
         navigationCategoryList();
 
     }
 
     private void navigationCategoryList() {
 
-        final ShowCategoryAdapeter showCategoryAdapeter = new ShowCategoryAdapeter(BrandProducts.this, arrayList, hashMap, listView);
+        final ShowCategoryAdapeter showCategoryAdapeter=new ShowCategoryAdapeter(BrandProducts.this,arrayList,hashMap,listView);
         listView.setAdapter(showCategoryAdapeter);
         listView.setOnGroupClickListener(new ExpandableListView.OnGroupClickListener() {
             @Override
             public boolean onGroupClick(ExpandableListView parent, View v, int groupPosition, long id) {
 
-                if (arrayList.get(groupPosition).getFLAG_INDICATOR() == 1) {
+                if(arrayList.get(groupPosition).getFLAG_INDICATOR()==1)
+                {
                     listView.collapseGroup(groupPosition);
                     arrayList.get(groupPosition).setFLAG_INDICATOR(0);
 
-                } else {
-                    for (int i = 0; i < arrayList.size(); i++) {
-                        if (arrayList.get(i).getFLAG_INDICATOR() == 1) {
+                }
+                else{
+                    for(int i=0;i<arrayList.size();i++)
+                    {
+                        if(arrayList.get(i).getFLAG_INDICATOR()==1)
+                        {
                             listView.collapseGroup(i);
                             arrayList.get(i).setFLAG_INDICATOR(0);
                         }
@@ -231,7 +253,7 @@ public class BrandProducts extends AppCompatActivity implements View.OnClickList
                     }
                     listView.expandGroup(groupPosition);
                     listView.setSelectedGroup(groupPosition);
-                    nestedScrollView.smoothScrollTo(0, groupPosition);
+                    nestedScrollView.smoothScrollTo(0,groupPosition);
                     arrayList.get(groupPosition).setFLAG_INDICATOR(1);
 
                 }
@@ -241,14 +263,14 @@ public class BrandProducts extends AppCompatActivity implements View.OnClickList
         listView.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
             @Override
             public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
-                Intent intent = new Intent(BrandProducts.this, Childcategoru.class);
-                intent.putExtra("get", hashMap.get(arrayList.get(groupPosition).getPARENTCATEGORY()).get(childPosition));
-                intent.putExtra("getFilterName", String.valueOf(arrayList.get(groupPosition).getPARENTCATEGORY()));
+                Intent intent=new Intent(BrandProducts.this,Childcategoru.class);
+                intent.putExtra("get",hashMap.get(arrayList.get(groupPosition).getPARENTCATEGORY()).get(childPosition));
+                intent.putExtra("getFilterName",String.valueOf(arrayList.get(groupPosition).getPARENTCATEGORY()));
                 startActivity(intent);
                 if (drawer.isDrawerOpen(GravityCompat.START)) {
                     drawer.closeDrawer(GravityCompat.START);
                 }
-                for (int i = 0; i < parent.getCount(); ++i) {
+                for (int i=0; i<parent.getCount(); ++i) {
                     if (parent.isGroupExpanded(i)) {
                         parent.collapseGroup(i);
                     }
@@ -260,30 +282,30 @@ public class BrandProducts extends AppCompatActivity implements View.OnClickList
     }
 
     private void initiaze() {
-        arrayList = new ArrayList<>();
-        hashMap = new HashMap<>();
-        Books = new ArrayList<>();
-        Poojaitem = new ArrayList<>();
-        Homecare = new ArrayList<>();
-        others = new ArrayList<>();
+        arrayList=new ArrayList<>();
+        hashMap=new HashMap<>();
+        Books=new ArrayList<>();
+        Poojaitem=new ArrayList<>();
+        Homecare=new ArrayList<>();
+        others=new ArrayList<>();
 
 
     }
 
     private void refferencetonavigationcategory(View view) {
-        myorder = (LinearLayout) view.findViewById(R.id.myorders);
-        mycart = (LinearLayout) view.findViewById(R.id.mycart);
-        myaccount = (LinearLayout) view.findViewById(R.id.myaccount);
-        helpcenter = (LinearLayout) view.findViewById(R.id.helpcenter);
-        ratedesichain = (LinearLayout) view.findViewById(R.id.ratedesichain);
-        policy = (LinearLayout) view.findViewById(R.id.policy);
-        facebook = (LinearLayout) view.findViewById(R.id.facebook);
-        google = (LinearLayout) view.findViewById(R.id.googleplus);
-        twitter = (LinearLayout) view.findViewById(R.id.twitter);
-        pinterest = (LinearLayout) view.findViewById(R.id.pinterest);
-        youtube = (LinearLayout) view.findViewById(R.id.youtube);
-        instagram = (LinearLayout) view.findViewById(R.id.instagram);
-        aboutus = (LinearLayout) view.findViewById(R.id.aboutus);
+        myorder= (LinearLayout) view.findViewById(R.id.myorders);
+        mycart= (LinearLayout) view.findViewById(R.id.mycart);
+        myaccount= (LinearLayout) view.findViewById(R.id.myaccount);
+        helpcenter= (LinearLayout) view.findViewById(R.id.helpcenter);
+        ratedesichain= (LinearLayout) view.findViewById(R.id.ratedesichain);
+        policy= (LinearLayout) view.findViewById(R.id.policy);
+        facebook= (LinearLayout) view.findViewById(R.id.facebook);
+        google=(LinearLayout) view.findViewById(R.id.googleplus);
+        twitter= (LinearLayout) view.findViewById(R.id.twitter);
+        pinterest= (LinearLayout) view.findViewById(R.id.pinterest);
+        youtube= (LinearLayout) view.findViewById(R.id.youtube);
+        instagram= (LinearLayout) view.findViewById(R.id.instagram);
+        aboutus= (LinearLayout) view.findViewById(R.id.aboutus);
         myorder.setOnClickListener(this);
         mycart.setOnClickListener(this);
         myaccount.setOnClickListener(this);
@@ -319,54 +341,39 @@ public class BrandProducts extends AppCompatActivity implements View.OnClickList
 
     @Override
     public void onClick(View v) {
-        switch (v.getId()) {
+        switch (v.getId()){
 
             case R.id.editInfo:
 
-                Intent editIntent = new Intent(this, SelectAddress.class);
-                editIntent.putExtra("flagIntent", FLAG);
+                Intent editIntent = new Intent(this,SelectAddress.class);
+                editIntent.putExtra("flagIntent",FLAG);
                 startActivity(editIntent);
                 break;
 
             case R.id.newAddress:
-                startActivity(new Intent(this, AddNewAddress.class));
+                startActivity(new Intent(this,AddNewAddress.class));
                 break;
-            default:
-                new Utility().openIntent(this, v.getId(), drawer);
+            default:new Utility().openIntent(this,v.getId(),drawer);
                 break;
-        }
-
-    }
-
-
-    public String load(String url) {
-        try {
-            JSON_RESPONSE = new FetchingFromUrl().execute(url).get();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        }
-        return JSON_RESPONSE;
-    }
-
-    public void loadProducts(String url , int sno){
-        try {
-            mJsonResponse = new FetchingFromUrl().execute(url+sno).get();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        }
-
-        if (mJsonResponse != null){
-            mBrandProdList = new BsetSellingProduct(mJsonResponse,BrandProducts.this).parseBestSellingProduct();
         }
 
     }
 
     @Override
     public void change() {
+
+    }
+
+    public String load(String url)
+    {
+        try {
+            JSON_RESPONSE=new FetchingFromUrl().execute(url).get();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+        return JSON_RESPONSE;
 
     }
 }

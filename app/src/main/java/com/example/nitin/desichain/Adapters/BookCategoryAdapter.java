@@ -3,6 +3,7 @@ package com.example.nitin.desichain.Adapters;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Paint;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,27 +11,23 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.example.nitin.desichain.Contents.CategoryList;
-import com.example.nitin.desichain.MyCart;
-import com.example.nitin.desichain.MyOrders;
+import com.example.nitin.desichain.Contents.BookCategoryList;
 import com.example.nitin.desichain.ProductPageActual;
 import com.example.nitin.desichain.R;
-import com.example.nitin.desichain.Utility.Utility;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 
 
-public class CategoryAdapter extends BaseAdapter {
+public class BookCategoryAdapter extends BaseAdapter {
 
     private Context context;
-    private ArrayList<CategoryList> arrayList;
+    private ArrayList<BookCategoryList> arrayList;
 
 
 
-    public CategoryAdapter(Context context, ArrayList<CategoryList> arrayList) {
+    public BookCategoryAdapter(Context context, ArrayList<BookCategoryList> arrayList) {
         this.context = context;
         this.arrayList = arrayList;
     }
@@ -68,11 +65,10 @@ public class CategoryAdapter extends BaseAdapter {
             convertView.setTag(viewHolder);
 
         }
+        Log.i("TESTING2","1");
         viewHolder= (ViewHolder) convertView.getTag();
 
-       // viewHolder.productImage.setImageResource(arrayList.get(position).getImageUrl());
-        Picasso.with(parent.getContext()).load("http://www.desichain.in/uploads/thumb_"+arrayList.get(position).getImageUrl()).resize(200,200).into(viewHolder.productImage);
-     //   Picasso.with(context).load("http://www.desichain.in/uploads/"+arrayList.get(position).getIMAGE_URL()).into(viewHolder.productImage);
+        Picasso.with(context).load("http://www.desichain.in/uploads/"+arrayList.get(position).getIMAGE_URL()).into(viewHolder.productImage);
         viewHolder.productImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -88,7 +84,7 @@ public class CategoryAdapter extends BaseAdapter {
                 context.startActivity(intent);
             }
         });
-        viewHolder.productprice.setText("Rs. " +arrayList.get(position).getACTUAL_PRICE());
+        viewHolder.productprice.setText(String.valueOf(arrayList.get(position).getACTUAL_PRICE()));
         viewHolder.productprice.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -104,7 +100,7 @@ public class CategoryAdapter extends BaseAdapter {
                 context.startActivity(intent);
             }
         });
-        viewHolder.productnofratings.setText(arrayList.get(position).getNUMBER_OF_REVIEWS());
+        viewHolder.productnofratings.setText(arrayList.get(position).getREVIEWS());
         viewHolder.productnofratings.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -138,3 +134,5 @@ public class CategoryAdapter extends BaseAdapter {
         LinearLayout lm;
     }
 }
+
+
