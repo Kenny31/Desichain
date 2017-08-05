@@ -1,6 +1,7 @@
 package com.example.nitin.desichain;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -33,7 +34,6 @@ import java.util.List;
 
 public class BuyNow extends AppCompatActivity implements View.OnClickListener,SingleCartAdapter.ListChange{
 
-    private static  String LOG_TAG = BuyNow.class.getSimpleName();
     Button b1;
     private int totalCost = 1520,FLAG=1;
     private CheckBox mGiftWrapCheckBox;
@@ -154,8 +154,6 @@ public class BuyNow extends AppCompatActivity implements View.OnClickListener,Si
             }
         };
 
-        //drawer.setDrawerListener(toggle);
-        // toggle.syncState();
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         headerView = navigationView.inflateHeaderView(R.layout.nav_header_main);
         refferencetonavigationcategory(navigationView);
@@ -388,7 +386,22 @@ public class BuyNow extends AppCompatActivity implements View.OnClickListener,Si
         subscribe= (LinearLayout) findViewById(R.id.subscribe);
         myorder.setOnClickListener(this);
         mycart.setOnClickListener(this);
-        myaccount.setOnClickListener(this);
+        myaccount.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                SharedPreferences preferences = getSharedPreferences("myPref",MODE_PRIVATE);
+                String email = preferences.getString("emailId","none");
+                String pwd = preferences.getString("password","none");
+
+                if (email.equals("none") && pwd.equals("none")){
+                    startActivity(new Intent(BuyNow.this,LoginActivity.class));
+                    finish();
+                } else {
+                    startActivity(new Intent(BuyNow.this,MyAccount.class));
+
+                }
+            }
+        });
         helpcenter.setOnClickListener(this);
         ratedesichain.setOnClickListener(this);
         policy.setOnClickListener(this);

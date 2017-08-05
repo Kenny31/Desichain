@@ -1,6 +1,9 @@
 package com.example.nitin.desichain;
 
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -12,6 +15,7 @@ import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.NestedScrollView;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -24,6 +28,7 @@ import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.ExpandableListView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -103,6 +108,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         invalidateOptionsMenu();
 
 
+        Boolean isFirstRun = getSharedPreferences("PREFERENCE", MODE_PRIVATE)
+                .getBoolean("isFirstRun", true);
+
+        if (isFirstRun) {
+            //show start activity
+
+            startActivity(new Intent(MainActivity.this, LoginActivity.class));
+         }
+
+
+        getSharedPreferences("PREFERENCE", MODE_PRIVATE).edit()
+                .putBoolean("isFirstRun", false).commit();
+
+
         final Intent intent=getIntent();
         if(intent!=null){
             FLAG_FOR_CALLING=intent.getStringExtra("CALLINGFROMREGISTERACTIVITY");
@@ -168,6 +187,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             @Override
             public void onClick(View v) {
                 Intent intent1 = new Intent(MainActivity.this,CategoryPage.class);
+                intent1.putExtra("Topic","Latest Products");
                 intent1.putExtra("featuredProdKey",mLatestProductList);
                 startActivity(intent1);
             }
@@ -176,6 +196,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             @Override
             public void onClick(View v) {
                 Intent intent1 = new Intent(MainActivity.this,CategoryPage.class);
+                intent1.putExtra("Topic","Top ten game");
                 intent1.putExtra("featuredProdKey",mLatestProductList);
                 startActivity(intent1);
 
@@ -185,11 +206,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             @Override
             public void onClick(View v) {
                 Intent intent1 = new Intent(MainActivity.this,CategoryPage.class);
+                intent1.putExtra("Topic","Featured Products");
                 intent1.putExtra("featuredProdKey",mFeaturedProductList);
-                for (int i=0;i<mFeaturedProductList.size();i++) {
-                    CategoryList categoryList = mFeaturedProductList.get(i);
-                    Log.i("ashish", categoryList.getPRODUCT_NAME());
-                }
                 startActivity(intent1);
             }
         });
@@ -197,6 +215,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             @Override
             public void onClick(View v) {
                 Intent intent1 = new Intent(MainActivity.this,CategoryPage.class);
+                intent1.putExtra("Topic","Best Selling products");
                 intent1.putExtra("featuredProdKey",mBestSellingProductList);
                 startActivity(intent1);
 
@@ -615,7 +634,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         subscribe = (LinearLayout) findViewById(R.id.subscribe);
         myorder.setOnClickListener(this);
         mycart.setOnClickListener(this);
-        myaccount.setOnClickListener(this);
+        myaccount.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                SharedPreferences preferences = getSharedPreferences("myPref",MODE_PRIVATE);
+                String email = preferences.getString("emailId","none");
+                String pwd = preferences.getString("password","none");
+
+                if (email.equals("none") && pwd.equals("none")){
+                    startActivity(new Intent(MainActivity.this,LoginActivity.class));
+                    finish();
+                } else {
+                    startActivity(new Intent(MainActivity.this,MyAccount.class));
+
+                }
+            }
+        });
         helpcenter.setOnClickListener(this);
         ratedesichain.setOnClickListener(this);
         policy.setOnClickListener(this);
@@ -626,12 +660,90 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         youtube.setOnClickListener(this);
         instagram.setOnClickListener(this);
         aboutus.setOnClickListener(this);
-        subscribe.setOnClickListener(this);
+        subscribe.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                closeDrawer();
+                String emailId = getIntent().getStringExtra("emailId");
+                String password = getIntent().getStringExtra("password");
+                if (emailId==null && password==null) {
+                    openDialogBox();
+                }
+                else {
+                    openConfirmationSubscribe();
+                }
+
+            }
+        });
+    }
+
+    private void openConfirmationSubscribe() {
+        AlertDialog.Builder builder;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            builder = new AlertDialog.Builder(MainActivity.this);
+        } else {
+            builder = new AlertDialog.Builder(MainActivity.this);
+        }
+        builder.setTitle("Subscribe to Newsletter")
+                .setMessage("Are you sure you want to subscribe newsletter?")
+                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        // continue with delete
+                        Toast.makeText(MainActivity.this,"thanks for subscribing",Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        // do nothing
+                    }
+                })
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .show();
+    }
+
+    private void openDialogBox() {
+        AlertDialog.Builder builder=new AlertDialog.Builder(this);
+        builder.setTitle("Enter The Email");
+        final EditText USER_EMAIL_SUBSCRIBE=new EditText(this);
+        builder.setView(USER_EMAIL_SUBSCRIBE);
+        builder.setPositiveButton("Submit", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+
+                if(USER_EMAIL_SUBSCRIBE.getText().toString().equals(""))
+                {
+
+                    Toast.makeText(MainActivity.this,"",Toast.LENGTH_SHORT).show();
+                }
+                else {
+                    dialog.dismiss();
+                    Toast.makeText(MainActivity.this, "Email has been seet", Toast.LENGTH_SHORT).show();
+
+                }
+            }
+        });
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+
+        builder.create().show();
+
+
+    }
+
+    private void closeDrawer() {
+        if (drawer.isDrawerOpen(Gravity.LEFT)){
+            drawer.closeDrawer(Gravity.LEFT);
+        }
     }
 
 
     @Override
     public void onClick(View v) {
+
         new Utility().openIntent(this, v.getId(), drawer);
     }
 

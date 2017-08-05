@@ -1,6 +1,7 @@
 package com.example.nitin.desichain;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -47,6 +48,8 @@ public class BrandProducts extends AppCompatActivity implements View.OnClickList
     private Toolbar mToolbar;
     private TextView mEmptyText;
     View headerView;
+    String prodName,imageUrl,prodDesc;
+    int sno;
     private int FLAG = 1;
     private ArrayList<CategoryList> mBrandProdList;
     private Bundle bundle;
@@ -98,17 +101,17 @@ public class BrandProducts extends AppCompatActivity implements View.OnClickList
         brandname = (TextView) findViewById(R.id.brand_name);
         branddescription = (TextView) findViewById(R.id.brand_description);
 
-//        Log.i(TAG,bundle.getString(AllConstants.Brandname));
-//
+
 
         mBrandProdList = new ArrayList<>();
 
         Bundle extras = getIntent().getExtras();
-        String imageUrl = extras.getString("bundleImageUrl");
-        String prodName = extras.getString("bundleProdName");
-        String prodDesc = extras.getString("bundleProdDesc");
-        int sno = extras.getInt("bundleBrandSno");
-
+        if (extras!=null) {
+             imageUrl = extras.getString("bundleImageUrl");
+             prodName = extras.getString("bundleProdName");
+             prodDesc = extras.getString("bundleProdDesc");
+             sno = extras.getInt("bundleBrandSno");
+        }
 
 
         if (intent.getIntExtra(AllConstants.FLAG, 0) == AllConstants.CALLFROMSHOPBYPUBLISHERACTIVITY) {
@@ -144,17 +147,6 @@ public class BrandProducts extends AppCompatActivity implements View.OnClickList
             mBrandRecyclerView.setVisibility(View.GONE);
             mEmptyText.setVisibility(View.VISIBLE);
         }
-
-//        if (!imageUrl.isEmpty() && !prodName.isEmpty() && !prodDesc.isEmpty()) {
-//            Picasso.with(BrandProducts.this).load("http://www.desichain.in/uploads/" + getIntent().getStringExtra("bundleImageUrl")).into(brandimage);
-//            brandname.setText(prodName);
-//            branddescription.setText(prodDesc);
-//        }
-//        } else {
-//            Picasso.with(BrandProducts.this).load("http://www.desichain.in/uploads/" + bundle.get(AllConstants.Brandimageurl)).into(brandimage);
-//            brandname.setText(bundle.getString(AllConstants.Brandname));
-//            branddescription.setText(bundle.getString(AllConstants.Branddescription));
-//        }
 
 
 
@@ -308,7 +300,22 @@ public class BrandProducts extends AppCompatActivity implements View.OnClickList
         aboutus= (LinearLayout) view.findViewById(R.id.aboutus);
         myorder.setOnClickListener(this);
         mycart.setOnClickListener(this);
-        myaccount.setOnClickListener(this);
+        myaccount.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                SharedPreferences preferences = getSharedPreferences("myPref",MODE_PRIVATE);
+                String email = preferences.getString("emailId","none");
+                String pwd = preferences.getString("password","none");
+
+                if (email.equals("none") && pwd.equals("none")){
+                    startActivity(new Intent(BrandProducts.this,LoginActivity.class));
+                    finish();
+                } else {
+                    startActivity(new Intent(BrandProducts.this,MyAccount.class));
+
+                }
+            }
+        });
         helpcenter.setOnClickListener(this);
         ratedesichain.setOnClickListener(this);
         policy.setOnClickListener(this);
@@ -323,21 +330,6 @@ public class BrandProducts extends AppCompatActivity implements View.OnClickList
 
     }
 
-   /* private void prepareItems() {
-
-        mList.add(new ProductHorizontal("MICROMAX SPARK VDEO(8GB) 4G VOLTE","Rs. 50000",R.mipmap.ic_launcher, "4.0","12"));
-
-        mList.add(new ProductHorizontal("MICROMAX SPARK VDEO(8GB) 4G VOLTE","Rs. 50000",R.mipmap.ic_launcher, "4.0","12"));
-
-        mList.add(new ProductHorizontal("MICROMAX SPARK VDEO(8GB) 4G VOLTE","Rs. 50000",R.mipmap.ic_launcher, "4.0","12"));
-
-        mList.add(new ProductHorizontal("MICROMAX SPARK VDEO(8GB) 4G VOLTE","Rs. 50000",R.mipmap.ic_launcher, "4.0","12"));
-        mList.add(new ProductHorizontal("MICROMAX SPARK VDEO(8GB) 4G VOLTE","Rs. 50000",R.mipmap.ic_launcher, "4.0","12"));
-
-        mList.add(new ProductHorizontal("MICROMAX SPARK VDEO(8GB) 4G VOLTE","Rs. 50000",R.mipmap.ic_launcher, "4.0","12"));
-
-
-    }*/
 
     @Override
     public void onClick(View v) {
